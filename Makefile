@@ -13,4 +13,7 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "postgresql://root:pasd@localhost:5432/allegro_trade?sslmode=disable" -verbose down
 
+sqlc:
+	sqlc generate
+
 .PHONY: pgsql
