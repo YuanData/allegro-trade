@@ -9,18 +9,18 @@ import (
 )
 
 type Detail struct {
-	ID           int64 `json:"id"`
-	FromTraderID int64 `json:"from_trader_id"`
-	ToTraderID   int64 `json:"to_trader_id"`
-	// must be positive
+	ID       int64 `json:"id"`
+	TraderID int64 `json:"trader_id"`
+	// can be negative or positive
 	Number      int64     `json:"number"`
 	CreatedTime time.Time `json:"created_time"`
 }
 
 type Record struct {
-	ID       int64 `json:"id"`
-	TraderID int64 `json:"trader_id"`
-	// can be negative or positive
+	ID           int64 `json:"id"`
+	FromTraderID int64 `json:"from_trader_id"`
+	ToTraderID   int64 `json:"to_trader_id"`
+	// must be positive
 	Number      int64     `json:"number"`
 	CreatedTime time.Time `json:"created_time"`
 }

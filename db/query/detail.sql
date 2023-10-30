@@ -1,10 +1,9 @@
 -- name: CreateDetail :one
 INSERT INTO details (
-  from_trader_id,
-  to_trader_id,
+  trader_id,
   number
 ) VALUES (
-  $1, $2, $3
+  $1, $2
 ) RETURNING *;
 
 -- name: GetDetail :one
@@ -13,9 +12,7 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListDetails :many
 SELECT * FROM details
-WHERE 
-    from_trader_id = $1 OR
-    to_trader_id = $2
+WHERE trader_id = $1
 ORDER BY id
-LIMIT $3
-OFFSET $4;
+LIMIT $2
+OFFSET $3;

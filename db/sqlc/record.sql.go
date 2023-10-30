@@ -11,24 +11,27 @@ import (
 
 const createRecord = `-- name: CreateRecord :one
 INSERT INTO records (
-  trader_id,
+  from_trader_id,
+  to_trader_id,
   number
 ) VALUES (
-  $1, $2
-) RETURNING id, trader_id, number, created_time
+  $1, $2, $3
+) RETURNING id, from_trader_id, to_trader_id, number, created_time
 `
 
 type CreateRecordParams struct {
-	TraderID int64 `json:"trader_id"`
-	Number   int64 `json:"number"`
+	FromTraderID int64 `json:"from_trader_id"`
+	ToTraderID   int64 `json:"to_trader_id"`
+	Number       int64 `json:"number"`
 }
 
 func (q *Queries) CreateRecord(ctx context.Context, arg CreateRecordParams) (Record, error) {
-	row := q.db.QueryRowContext(ctx, createRecord, arg.TraderID, arg.Number)
+	row := q.db.QueryRowContext(ctx, createRecord, arg.FromTraderID, arg.ToTraderID, arg.Number)
 	var i Record
 	err := row.Scan(
 		&i.ID,
-		&i.TraderID,
+		&i.FromTraderID,
+		&i.ToTraderID,
 		&i.Number,
 		&i.CreatedTime,
 	)
@@ -36,7 +39,7 @@ func (q *Queries) CreateRecord(ctx context.Context, arg CreateRecordParams) (Rec
 }
 
 const getRecord = `-- name: GetRecord :one
-SELECT id, trader_id, number, created_time FROM records
+SELECT id, from_trader_id, to_trader_id, number, created_time FROM records
 WHERE id = $1 LIMIT 1
 `
 
@@ -45,7 +48,8 @@ func (q *Queries) GetRecord(ctx context.Context, id int64) (Record, error) {
 	var i Record
 	err := row.Scan(
 		&i.ID,
-		&i.TraderID,
+		&i.FromTraderID,
+		&i.ToTraderID,
 		&i.Number,
 		&i.CreatedTime,
 	)
@@ -53,21 +57,29 @@ func (q *Queries) GetRecord(ctx context.Context, id int64) (Record, error) {
 }
 
 const listRecords = `-- name: ListRecords :many
-SELECT id, trader_id, number, created_time FROM records
-WHERE trader_id = $1
+SELECT id, from_trader_id, to_trader_id, number, created_time FROM records
+WHERE 
+    from_trader_id = $1 OR
+    to_trader_id = $2
 ORDER BY id
-LIMIT $2
-OFFSET $3
+LIMIT $3
+OFFSET $4
 `
 
 type ListRecordsParams struct {
-	TraderID int64 `json:"trader_id"`
-	Limit    int32 `json:"limit"`
-	Offset   int32 `json:"offset"`
+	FromTraderID int64 `json:"from_trader_id"`
+	ToTraderID   int64 `json:"to_trader_id"`
+	Limit        int32 `json:"limit"`
+	Offset       int32 `json:"offset"`
 }
 
 func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Record, error) {
-	rows, err := q.db.QueryContext(ctx, listRecords, arg.TraderID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listRecords,
+		arg.FromTraderID,
+		arg.ToTraderID,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +89,8 @@ func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Rec
 		var i Record
 		if err := rows.Scan(
 			&i.ID,
-			&i.TraderID,
+			&i.FromTraderID,
+			&i.ToTraderID,
 			&i.Number,
 			&i.CreatedTime,
 		); err != nil {

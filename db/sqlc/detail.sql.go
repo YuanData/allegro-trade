@@ -11,27 +11,24 @@ import (
 
 const createDetail = `-- name: CreateDetail :one
 INSERT INTO details (
-  from_trader_id,
-  to_trader_id,
+  trader_id,
   number
 ) VALUES (
-  $1, $2, $3
-) RETURNING id, from_trader_id, to_trader_id, number, created_time
+  $1, $2
+) RETURNING id, trader_id, number, created_time
 `
 
 type CreateDetailParams struct {
-	FromTraderID int64 `json:"from_trader_id"`
-	ToTraderID   int64 `json:"to_trader_id"`
-	Number       int64 `json:"number"`
+	TraderID int64 `json:"trader_id"`
+	Number   int64 `json:"number"`
 }
 
 func (q *Queries) CreateDetail(ctx context.Context, arg CreateDetailParams) (Detail, error) {
-	row := q.db.QueryRowContext(ctx, createDetail, arg.FromTraderID, arg.ToTraderID, arg.Number)
+	row := q.db.QueryRowContext(ctx, createDetail, arg.TraderID, arg.Number)
 	var i Detail
 	err := row.Scan(
 		&i.ID,
-		&i.FromTraderID,
-		&i.ToTraderID,
+		&i.TraderID,
 		&i.Number,
 		&i.CreatedTime,
 	)
@@ -39,7 +36,7 @@ func (q *Queries) CreateDetail(ctx context.Context, arg CreateDetailParams) (Det
 }
 
 const getDetail = `-- name: GetDetail :one
-SELECT id, from_trader_id, to_trader_id, number, created_time FROM details
+SELECT id, trader_id, number, created_time FROM details
 WHERE id = $1 LIMIT 1
 `
 
@@ -48,8 +45,7 @@ func (q *Queries) GetDetail(ctx context.Context, id int64) (Detail, error) {
 	var i Detail
 	err := row.Scan(
 		&i.ID,
-		&i.FromTraderID,
-		&i.ToTraderID,
+		&i.TraderID,
 		&i.Number,
 		&i.CreatedTime,
 	)
@@ -57,29 +53,21 @@ func (q *Queries) GetDetail(ctx context.Context, id int64) (Detail, error) {
 }
 
 const listDetails = `-- name: ListDetails :many
-SELECT id, from_trader_id, to_trader_id, number, created_time FROM details
-WHERE 
-    from_trader_id = $1 OR
-    to_trader_id = $2
+SELECT id, trader_id, number, created_time FROM details
+WHERE trader_id = $1
 ORDER BY id
-LIMIT $3
-OFFSET $4
+LIMIT $2
+OFFSET $3
 `
 
 type ListDetailsParams struct {
-	FromTraderID int64 `json:"from_trader_id"`
-	ToTraderID   int64 `json:"to_trader_id"`
-	Limit        int32 `json:"limit"`
-	Offset       int32 `json:"offset"`
+	TraderID int64 `json:"trader_id"`
+	Limit    int32 `json:"limit"`
+	Offset   int32 `json:"offset"`
 }
 
 func (q *Queries) ListDetails(ctx context.Context, arg ListDetailsParams) ([]Detail, error) {
-	rows, err := q.db.QueryContext(ctx, listDetails,
-		arg.FromTraderID,
-		arg.ToTraderID,
-		arg.Limit,
-		arg.Offset,
-	)
+	rows, err := q.db.QueryContext(ctx, listDetails, arg.TraderID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +77,7 @@ func (q *Queries) ListDetails(ctx context.Context, arg ListDetailsParams) ([]Det
 		var i Detail
 		if err := rows.Scan(
 			&i.ID,
-			&i.FromTraderID,
-			&i.ToTraderID,
+			&i.TraderID,
 			&i.Number,
 			&i.CreatedTime,
 		); err != nil {

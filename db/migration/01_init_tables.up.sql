@@ -6,14 +6,14 @@ CREATE TABLE "traders" (
   "created_time" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "records" (
+CREATE TABLE "details" (
   "id" bigserial PRIMARY KEY,
   "trader_id" bigint NOT NULL,
   "number" bigint NOT NULL,
   "created_time" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "details" (
+CREATE TABLE "records" (
   "id" bigserial PRIMARY KEY,
   "from_trader_id" bigint NOT NULL,
   "to_trader_id" bigint NOT NULL,
@@ -21,22 +21,22 @@ CREATE TABLE "details" (
   "created_time" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "records" ADD FOREIGN KEY ("trader_id") REFERENCES "traders" ("id");
+ALTER TABLE "details" ADD FOREIGN KEY ("trader_id") REFERENCES "traders" ("id");
 
-ALTER TABLE "details" ADD FOREIGN KEY ("from_trader_id") REFERENCES "traders" ("id");
+ALTER TABLE "records" ADD FOREIGN KEY ("from_trader_id") REFERENCES "traders" ("id");
 
-ALTER TABLE "details" ADD FOREIGN KEY ("to_trader_id") REFERENCES "traders" ("id");
+ALTER TABLE "records" ADD FOREIGN KEY ("to_trader_id") REFERENCES "traders" ("id");
 
 CREATE INDEX ON "traders" ("holder");
 
-CREATE INDEX ON "records" ("trader_id");
+CREATE INDEX ON "details" ("trader_id");
 
-CREATE INDEX ON "details" ("from_trader_id");
+CREATE INDEX ON "records" ("from_trader_id");
 
-CREATE INDEX ON "details" ("to_trader_id");
+CREATE INDEX ON "records" ("to_trader_id");
 
-CREATE INDEX ON "details" ("from_trader_id", "to_trader_id");
+CREATE INDEX ON "records" ("from_trader_id", "to_trader_id");
 
-COMMENT ON COLUMN "records"."number" IS 'can be negative or positive';
+COMMENT ON COLUMN "details"."number" IS 'can be negative or positive';
 
-COMMENT ON COLUMN "details"."number" IS 'must be positive';
+COMMENT ON COLUMN "records"."number" IS 'must be positive';
