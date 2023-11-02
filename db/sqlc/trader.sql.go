@@ -9,6 +9,31 @@ import (
 	"context"
 )
 
+const addTraderRest = `-- name: AddTraderRest :one
+UPDATE traders
+SET rest = rest + $1
+WHERE id = $2
+RETURNING id, holder, rest, symbol, created_time
+`
+
+type AddTraderRestParams struct {
+	Number int64 `json:"number"`
+	ID     int64 `json:"id"`
+}
+
+func (q *Queries) AddTraderRest(ctx context.Context, arg AddTraderRestParams) (Trader, error) {
+	row := q.db.QueryRowContext(ctx, addTraderRest, arg.Number, arg.ID)
+	var i Trader
+	err := row.Scan(
+		&i.ID,
+		&i.Holder,
+		&i.Rest,
+		&i.Symbol,
+		&i.CreatedTime,
+	)
+	return i, err
+}
+
 const createTrader = `-- name: CreateTrader :one
 INSERT INTO traders (
   holder,
@@ -55,6 +80,25 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetTrader(ctx context.Context, id int64) (Trader, error) {
 	row := q.db.QueryRowContext(ctx, getTrader, id)
+	var i Trader
+	err := row.Scan(
+		&i.ID,
+		&i.Holder,
+		&i.Rest,
+		&i.Symbol,
+		&i.CreatedTime,
+	)
+	return i, err
+}
+
+const getTraderForUpdate = `-- name: GetTraderForUpdate :one
+SELECT id, holder, rest, symbol, created_time FROM traders
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE
+`
+
+func (q *Queries) GetTraderForUpdate(ctx context.Context, id int64) (Trader, error) {
+	row := q.db.QueryRowContext(ctx, getTraderForUpdate, id)
 	var i Trader
 	err := row.Scan(
 		&i.ID,

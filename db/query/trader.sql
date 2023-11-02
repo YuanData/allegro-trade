@@ -11,6 +11,11 @@ INSERT INTO traders (
 SELECT * FROM traders
 WHERE id = $1 LIMIT 1;
 
+-- name: GetTraderForUpdate :one
+SELECT * FROM traders
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
 -- name: ListTraders :many
 SELECT * FROM traders
 ORDER BY id
@@ -21,6 +26,12 @@ OFFSET $2;
 UPDATE traders
 SET rest = $2
 WHERE id = $1
+RETURNING *;
+
+-- name: AddTraderRest :one
+UPDATE traders
+SET rest = rest + sqlc.arg(number)
+WHERE id = sqlc.arg(id)
 RETURNING *;
 
 -- name: DeleteTrader :exec
