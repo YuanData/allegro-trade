@@ -72,7 +72,7 @@ func (q *Queries) ListDetails(ctx context.Context, arg ListDetailsParams) ([]Det
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Detail
+	items := []Detail{}
 	for rows.Next() {
 		var i Detail
 		if err := rows.Scan(

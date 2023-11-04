@@ -84,7 +84,7 @@ func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Rec
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Record
+	items := []Record{}
 	for rows.Next() {
 		var i Record
 		if err := rows.Scan(

@@ -128,7 +128,7 @@ func (q *Queries) ListTraders(ctx context.Context, arg ListTradersParams) ([]Tra
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Trader
+	items := []Trader{}
 	for rows.Next() {
 		var i Trader
 		if err := rows.Scan(
