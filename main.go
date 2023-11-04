@@ -7,16 +7,16 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/YuanData/allegro-trade/api"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
-)
-
-const (
-	dbDriver      = "postgres"
-	dbSource      = "postgresql://root:pasd@localhost:5432/allegro_trade?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
+	"github.com/YuanData/allegro-trade/util"
 )
 
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("load config err: ", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("sql open err: ", err)
 	}
@@ -24,8 +24,8 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
-		log.Fatal("server start err", err)
+		log.Fatal("server start err: ", err)
 	}
 }
