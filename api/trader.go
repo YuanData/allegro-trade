@@ -10,7 +10,7 @@ import (
 
 type createTraderRequest struct {
 	Holder    string `json:"holder" binding:"required"`
-	Symbol string `json:"symbol" binding:"required,oneof=BTC ETH ADA"`
+	Symbol string `json:"symbol" binding:"required,symbol"`
 }
 
 func (server *Server) createTrader(ctx *gin.Context) {
@@ -65,7 +65,7 @@ type listTraderRequest struct {
 	PageLmt int32 `form:"page_lmt" binding:"required,min=5,max=10"`
 }
 
-func (server *Server) listTrader(ctx *gin.Context) {
+func (server *Server) listTraders(ctx *gin.Context) {
 	var req listTraderRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

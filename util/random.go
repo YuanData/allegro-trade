@@ -37,7 +37,7 @@ func RandomAmount() int64 {
 }
 
 func RandomSymbol() string {
-	symbols := []string{"BTC", "ETH", "ADA"}
+	symbols := []string{ETH, BTC, ADA}
 	n := len(symbols)
 	return symbols[rand.Intn(n)]
 }
