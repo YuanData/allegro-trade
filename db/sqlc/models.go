@@ -16,6 +16,15 @@ type Detail struct {
 	CreatedTime time.Time `json:"created_time"`
 }
 
+type Member struct {
+	Membername          string    `json:"membername"`
+	PasswordHash        string    `json:"password_hash"`
+	NameEntire          string    `json:"name_entire"`
+	Email               string    `json:"email"`
+	PasswordChangedTime time.Time `json:"password_changed_time"`
+	CreatedTime         time.Time `json:"created_time"`
+}
+
 type Record struct {
 	ID           int64 `json:"id"`
 	FromTraderID int64 `json:"from_trader_id"`

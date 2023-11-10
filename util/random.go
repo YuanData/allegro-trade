@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
@@ -40,4 +41,8 @@ func RandomSymbol() string {
 	symbols := []string{ETH, BTC, ADA}
 	n := len(symbols)
 	return symbols[rand.Intn(n)]
+}
+
+func RandomEmail() string {
+	return fmt.Sprintf("%s@test.dev", RandomString(10))
 }

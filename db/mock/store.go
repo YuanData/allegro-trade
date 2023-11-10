@@ -65,6 +65,21 @@ func (mr *MockStoreMockRecorder) CreateDetail(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDetail", reflect.TypeOf((*MockStore)(nil).CreateDetail), arg0, arg1)
 }
 
+// CreateMember mocks base method.
+func (m *MockStore) CreateMember(arg0 context.Context, arg1 db.CreateMemberParams) (db.Member, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateMember", arg0, arg1)
+	ret0, _ := ret[0].(db.Member)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateMember indicates an expected call of CreateMember.
+func (mr *MockStoreMockRecorder) CreateMember(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMember", reflect.TypeOf((*MockStore)(nil).CreateMember), arg0, arg1)
+}
+
 // CreateRecord mocks base method.
 func (m *MockStore) CreateRecord(arg0 context.Context, arg1 db.CreateRecordParams) (db.Record, error) {
 	m.ctrl.T.Helper()
@@ -122,6 +137,21 @@ func (m *MockStore) GetDetail(arg0 context.Context, arg1 int64) (db.Detail, erro
 func (mr *MockStoreMockRecorder) GetDetail(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDetail", reflect.TypeOf((*MockStore)(nil).GetDetail), arg0, arg1)
+}
+
+// GetMember mocks base method.
+func (m *MockStore) GetMember(arg0 context.Context, arg1 string) (db.Member, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMember", arg0, arg1)
+	ret0, _ := ret[0].(db.Member)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMember indicates an expected call of GetMember.
+func (mr *MockStoreMockRecorder) GetMember(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMember", reflect.TypeOf((*MockStore)(nil).GetMember), arg0, arg1)
 }
 
 // GetRecord mocks base method.

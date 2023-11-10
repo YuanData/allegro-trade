@@ -11,10 +11,12 @@ import (
 type Querier interface {
 	AddTraderRest(ctx context.Context, arg AddTraderRestParams) (Trader, error)
 	CreateDetail(ctx context.Context, arg CreateDetailParams) (Detail, error)
+	CreateMember(ctx context.Context, arg CreateMemberParams) (Member, error)
 	CreateRecord(ctx context.Context, arg CreateRecordParams) (Record, error)
 	CreateTrader(ctx context.Context, arg CreateTraderParams) (Trader, error)
 	DeleteTrader(ctx context.Context, id int64) error
 	GetDetail(ctx context.Context, id int64) (Detail, error)
+	GetMember(ctx context.Context, membername string) (Member, error)
 	GetRecord(ctx context.Context, id int64) (Record, error)
 	GetTrader(ctx context.Context, id int64) (Trader, error)
 	GetTraderForUpdate(ctx context.Context, id int64) (Trader, error)
