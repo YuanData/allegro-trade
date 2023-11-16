@@ -2,11 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
+	"github.com/YuanData/allegro-trade/token"
 )
 
 type recordRequest struct {
@@ -23,11 +25,20 @@ func (server *Server) createRecord(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validTrader(ctx, req.FromTraderID, req.Symbol) {
+	fromTrader, valid := server.validTrader(ctx, req.FromTraderID, req.Symbol)
+	if !valid {
 		return
 	}
 
-	if !server.validTrader(ctx, req.ToTraderID, req.Symbol) {
+	authPayload := ctx.MustGet(authztnPayloadKey).(*token.Payload)
+	if fromTrader.Holder != authPayload.Membername {
+		err := errors.New("from trader not under member")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_, valid = server.validTrader(ctx, req.ToTraderID, req.Symbol)
+	if !valid {
 		return
 	}
 
@@ -46,23 +57,23 @@ func (server *Server) createRecord(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validTrader(ctx *gin.Context, traderID int64, symbol string) bool {
+func (server *Server) validTrader(ctx *gin.Context, traderID int64, symbol string) (db.Trader, bool) {
 	trader, err := server.store.GetTrader(ctx, traderID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return trader, false
 		}
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return trader, false
 	}
 
 	if trader.Symbol != symbol {
 		err := fmt.Errorf("trader [%d] symbol mismatch: %s vs %s", trader.ID, trader.Symbol, symbol)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return trader, false
 	}
 
-	return true
+	return trader, true
 }

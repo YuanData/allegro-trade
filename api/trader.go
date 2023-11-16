@@ -2,15 +2,16 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
+	"github.com/YuanData/allegro-trade/token"
 )
 
 type createTraderRequest struct {
-	Holder    string `json:"holder" binding:"required"`
 	Symbol string `json:"symbol" binding:"required,symbol"`
 }
 
@@ -21,8 +22,9 @@ func (server *Server) createTrader(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authztnPayloadKey).(*token.Payload)
 	arg := db.CreateTraderParams{
-		Holder:    req.Holder,
+		Holder:    authPayload.Membername,
 		Symbol: req.Symbol,
 		Rest:  0,
 	}
@@ -65,6 +67,13 @@ func (server *Server) getTrader(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authztnPayloadKey).(*token.Payload)
+	if trader.Holder != authPayload.Membername {
+		err := errors.New("trader not under member")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, trader)
 }
 
@@ -80,7 +89,9 @@ func (server *Server) listTraders(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authztnPayloadKey).(*token.Payload)
 	arg := db.ListTradersParams{
+		Holder:  authPayload.Membername,
 		Limit:  req.PageLmt,
 		Offset: (req.PageNum - 1) * req.PageLmt,
 	}

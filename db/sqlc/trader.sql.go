@@ -112,18 +112,20 @@ func (q *Queries) GetTraderForUpdate(ctx context.Context, id int64) (Trader, err
 
 const listTraders = `-- name: ListTraders :many
 SELECT id, holder, rest, symbol, created_time FROM traders
+WHERE holder = $1
 ORDER BY id
-LIMIT $1
-OFFSET $2
+LIMIT $2
+OFFSET $3
 `
 
 type ListTradersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Holder string `json:"holder"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
 }
 
 func (q *Queries) ListTraders(ctx context.Context, arg ListTradersParams) ([]Trader, error) {
-	rows, err := q.db.QueryContext(ctx, listTraders, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listTraders, arg.Holder, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

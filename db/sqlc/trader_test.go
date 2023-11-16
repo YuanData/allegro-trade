@@ -81,20 +81,23 @@ func TestDeleteTrader(t *testing.T) {
 }
 
 func TestListTraders(t *testing.T) {
+	var lastTrader Trader
 	for i := 0; i < 4; i++ {
-		createRandomTrader(t)
+		lastTrader = createRandomTrader(t)
 	}
 
 	arg := ListTradersParams{
+		Holder:  lastTrader.Holder,
 		Limit:  2,
-		Offset: 2,
+		Offset: 0,
 	}
 
 	traders, err := testQueries.ListTraders(context.Background(), arg)
 	require.NoError(t, err)
-	require.Len(t, traders, 2)
+	require.NotEmpty(t, traders)
 
 	for _, trader := range traders {
 		require.NotEmpty(t, trader)
+		require.Equal(t, lastTrader.Holder, trader.Holder)
 	}
 }

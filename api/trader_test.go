@@ -9,27 +9,34 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	mockdb "github.com/YuanData/allegro-trade/db/mock"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
+	"github.com/YuanData/allegro-trade/token"
 	"github.com/YuanData/allegro-trade/util"
 )
 
 func TestGetTraderAPI(t *testing.T) {
-	trader := randomTrader()
+	member, _ := randomMember(t)
+	trader := randomTrader(member.Membername)
 
 	testCases := []struct {
 		name          string
 		traderID     int64
+		setupAuthztn     func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "Successful",
 			traderID: trader.ID,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetTrader(gomock.Any(), gomock.Eq(trader.ID)).
@@ -42,8 +49,42 @@ func TestGetTraderAPI(t *testing.T) {
 			},
 		},
 		{
+			name:      "MemberNotAuthorized",
+			traderID: trader.ID,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, "unauthorized_member", time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetTrader(gomock.Any(), gomock.Eq(trader.ID)).
+					Times(1).
+					Return(trader, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:      "NoAuthztnCredentials",
+			traderID: trader.ID,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetTrader(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
 			name:      "Missing",
 			traderID: trader.ID,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
+
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetTrader(gomock.Any(), gomock.Eq(trader.ID)).
@@ -57,6 +98,9 @@ func TestGetTraderAPI(t *testing.T) {
 		{
 			name:      "ServerFailure",
 			traderID: trader.ID,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetTrader(gomock.Any(), gomock.Eq(trader.ID)).
@@ -70,6 +114,9 @@ func TestGetTraderAPI(t *testing.T) {
 		{
 			name:      "WrongID",
 			traderID: 0,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetTrader(gomock.Any(), gomock.Any()).
@@ -98,6 +145,7 @@ func TestGetTraderAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			tc.setupAuthztn(t, request, server.tokenAuthzr)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -105,19 +153,23 @@ func TestGetTraderAPI(t *testing.T) {
 }
 
 func TestCreateTraderAPI(t *testing.T) {
-	trader := randomTrader()
+	member, _ := randomMember(t)
+	trader := randomTrader(member.Membername)
 
 	testCases := []struct {
 		name          string
 		body          gin.H
+		setupAuthztn     func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "Successful",
 			body: gin.H{
-				"holder":    trader.Holder,
 				"symbol": trader.Symbol,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateTraderParams{
@@ -137,10 +189,28 @@ func TestCreateTraderAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "NoAuthztnCredentials",
+			body: gin.H{
+				"symbol": trader.Symbol,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateTrader(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
 			name: "ServerFailure",
 			body: gin.H{
-				"holder":    trader.Holder,
 				"symbol": trader.Symbol,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -155,23 +225,10 @@ func TestCreateTraderAPI(t *testing.T) {
 		{
 			name: "WrongSymbol",
 			body: gin.H{
-				"holder":    trader.Holder,
 				"symbol": "invalid",
 			},
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					CreateTrader(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
-			},
-		},
-		{
-			name: "WrongHolder",
-			body: gin.H{
-				"holder":    "",
-				"symbol": trader.Symbol,
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -204,6 +261,7 @@ func TestCreateTraderAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
+			tc.setupAuthztn(t, request, server.tokenAuthzr)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})
@@ -211,10 +269,12 @@ func TestCreateTraderAPI(t *testing.T) {
 }
 
 func TestListTradersAPI(t *testing.T) {
+	member, _ := randomMember(t)
+
 	n := 8
 	traders := make([]db.Trader, n)
 	for i := 0; i < n; i++ {
-		traders[i] = randomTrader()
+		traders[i] = randomTrader(member.Membername)
 	}
 
 	type Query struct {
@@ -225,6 +285,7 @@ func TestListTradersAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		query         Query
+		setupAuthztn     func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
@@ -234,8 +295,12 @@ func TestListTradersAPI(t *testing.T) {
 				PageNum:   1,
 				PageLmt: n,
 			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.ListTradersParams{
+					Holder:  member.Membername,
 					Limit:  int32(n),
 					Offset: 0,
 				}
@@ -251,10 +316,30 @@ func TestListTradersAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "NoAuthztnCredentials",
+			query: Query{
+				PageNum:   1,
+				PageLmt: n,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					ListTraders(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
 			name: "ServerFailure",
 			query: Query{
 				PageNum:   1,
 				PageLmt: n,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -272,6 +357,9 @@ func TestListTradersAPI(t *testing.T) {
 				PageNum:   -1,
 				PageLmt: n,
 			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					ListTraders(gomock.Any(), gomock.Any()).
@@ -282,10 +370,13 @@ func TestListTradersAPI(t *testing.T) {
 			},
 		},
 		{
-			name: "WrongPageNum",
+			name: "WrongPageLmt",
 			query: Query{
 				PageNum:   1,
 				PageLmt: 9999,
+			},
+			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -320,16 +411,17 @@ func TestListTradersAPI(t *testing.T) {
 			q.Add("page_lmt", fmt.Sprintf("%d", tc.query.PageLmt))
 			request.URL.RawQuery = q.Encode()
 
+			tc.setupAuthztn(t, request, server.tokenAuthzr)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})
 	}
 }
 
-func randomTrader() db.Trader {
+func randomTrader(holder string) db.Trader {
 	return db.Trader{
 		ID:       util.RandomInt(1, 2000),
-		Holder:    util.RandomHolder(),
+		Holder:    holder,
 		Rest:  util.RandomAmount(),
 		Symbol: util.RandomSymbol(),
 	}

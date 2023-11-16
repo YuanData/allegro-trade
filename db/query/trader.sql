@@ -18,9 +18,10 @@ FOR NO KEY UPDATE;
 
 -- name: ListTraders :many
 SELECT * FROM traders
+WHERE holder = $1
 ORDER BY id
-LIMIT $1
-OFFSET $2;
+LIMIT $2
+OFFSET $3;
 
 -- name: UpdateTrader :one
 UPDATE traders
