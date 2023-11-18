@@ -6,6 +6,8 @@ package db
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Detail struct {
@@ -32,6 +34,17 @@ type Record struct {
 	// must be positive
 	Number      int64     `json:"number"`
 	CreatedTime time.Time `json:"created_time"`
+}
+
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	Membername   string    `json:"membername"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent  string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiredTime  time.Time `json:"expired_time"`
+	CreatedTime  time.Time `json:"created_time"`
 }
 
 type Trader struct {

@@ -5,7 +5,7 @@ import (
 )
 
 type Authzr interface {
-	CreateToken(membername string, duration time.Duration) (string, error)
+	CreateToken(membername string, duration time.Duration) (string, *Payload, error)
 
 	VerifyToken(token string) (*Payload, error)
 }

@@ -19,11 +19,12 @@ func TestJWTAuthzr(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := authzr.CreateToken(membername, duration)
+	token, payload, err := authzr.CreateToken(membername, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
-	payload, err := authzr.VerifyToken(token)
+	payload, err = authzr.VerifyToken(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
@@ -37,11 +38,12 @@ func TestExpiredJWTToken(t *testing.T) {
 	authzr, err := NewJWTAuthzr(util.RandomString(32))
 	require.NoError(t, err)
 
-	token, err := authzr.CreateToken(util.RandomHolder(), -time.Minute)
+	token, payload, err := authzr.CreateToken(util.RandomHolder(), -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
-	payload, err := authzr.VerifyToken(token)
+	payload, err = authzr.VerifyToken(token)
 	require.Error(t, err)
 	require.EqualError(t, err, ErrExpiredToken.Error())
 	require.Nil(t, payload)

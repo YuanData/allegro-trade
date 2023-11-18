@@ -43,6 +43,7 @@ func (server *Server) setupRouter() {
 
 	router.POST("/members", server.createMember)
 	router.POST("/members/login", server.loginMember)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 
 	authztnRoutes := router.Group("/").Use(authztnMiddleware(server.tokenAuthzr))
 	authztnRoutes.POST("/traders", server.createTrader)

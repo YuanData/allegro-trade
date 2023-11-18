@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -13,11 +15,13 @@ type Querier interface {
 	CreateDetail(ctx context.Context, arg CreateDetailParams) (Detail, error)
 	CreateMember(ctx context.Context, arg CreateMemberParams) (Member, error)
 	CreateRecord(ctx context.Context, arg CreateRecordParams) (Record, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTrader(ctx context.Context, arg CreateTraderParams) (Trader, error)
 	DeleteTrader(ctx context.Context, id int64) error
 	GetDetail(ctx context.Context, id int64) (Detail, error)
 	GetMember(ctx context.Context, membername string) (Member, error)
 	GetRecord(ctx context.Context, id int64) (Record, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetTrader(ctx context.Context, id int64) (Trader, error)
 	GetTraderForUpdate(ctx context.Context, id int64) (Trader, error)
 	ListDetails(ctx context.Context, arg ListDetailsParams) ([]Detail, error)

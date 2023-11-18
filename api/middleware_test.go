@@ -20,8 +20,9 @@ func addAuthztn(
 	membername string,
 	duration time.Duration,
 ) {
-	token, err := tokenAuthzr.CreateToken(membername, duration)
+	token, payload, err := tokenAuthzr.CreateToken(membername, duration)
 	require.NoError(t, err)
+	require.NotEmpty(t, payload)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authztnType, token)
 	request.Header.Set(authztnHeaderKey, authorizationHeader)
