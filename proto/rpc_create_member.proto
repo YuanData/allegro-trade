@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "member.proto";
+
+option go_package = "github.com/YuanData/allegro-trade/pb";
+
+message CreateMemberRequest {
+    string membername = 1;
+    string name_entire = 2;
+    string email = 3;
+    string password = 4;
+}
+
+message CreateMemberResponse {
+    Member member = 1;
+}

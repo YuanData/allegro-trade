@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pb;
+
+import "member.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/YuanData/allegro-trade/pb";
+
+message LoginMemberRequest {
+    string membername = 1;
+    string password = 2;
+}
+
+message LoginMemberResponse {
+    Member member = 1;
+    string session_id = 2;
+    string access_token = 3;
+    string refresh_token = 4;
+    google.protobuf.Timestamp access_token_expired_time = 5;
+    google.protobuf.Timestamp refresh_token_expired_time = 6;
+}

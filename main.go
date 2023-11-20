@@ -3,11 +3,16 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net"
 
 	_ "github.com/lib/pq"
 	"github.com/YuanData/allegro-trade/api"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
+	"github.com/YuanData/allegro-trade/gapi"
+	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -22,12 +27,38 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+	runGrpcServer(config, store)
+}
+
+func runGrpcServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("server err: ", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterAllegroTradeServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", config.GRPCServerAddress)
+	if err != nil {
+		log.Fatal("listener err: ")
+	}
+
+	log.Printf("listener Addr: %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatal("gRPC server err")
+	}
+}
+
+func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("server err: ", err)
 	}
 
-	err = server.Start(config.ServerAddress)
+	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal("server start err: ", err)
 	}
