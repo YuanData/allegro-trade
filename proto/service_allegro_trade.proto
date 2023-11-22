@@ -2,12 +2,23 @@ syntax = "proto3";
 
 package pb;
 
+import "google/api/annotations.proto";
 import "rpc_create_member.proto";
 import "rpc_login_member.proto";
 
 option go_package = "github.com/YuanData/allegro-trade/pb";
 
 service AllegroTrade {
-    rpc CreateMember (CreateMemberRequest) returns (CreateMemberResponse) {}
-    rpc LoginMember (LoginMemberRequest) returns (LoginMemberResponse) {}
+    rpc CreateMember (CreateMemberRequest) returns (CreateMemberResponse) {
+        option (google.api.http) = {
+            post: "/v1/create_member"
+            body: "*"
+        };
+    }
+    rpc LoginMember (LoginMemberRequest) returns (LoginMemberResponse) {
+        option (google.api.http) = {
+            post: "/v1/login_member"
+            body: "*"
+        };
+    }
 }
