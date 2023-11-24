@@ -7,12 +7,19 @@ import (
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
+	"github.com/YuanData/allegro-trade/vld"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (server *Server) LoginMember(ctx context.Context, req *pb.LoginMemberRequest) (*pb.LoginMemberResponse, error) {
+	violations := validateLoginMemberRequest(req)
+	if violations != nil {
+		return nil, invalidArgumentError(violations)
+	}
+
 	member, err := server.store.GetMember(ctx, req.GetMembername())
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -65,4 +72,16 @@ func (server *Server) LoginMember(ctx context.Context, req *pb.LoginMemberReques
 		RefreshTokenExpiredTime: timestamppb.New(refreshPayload.ExpiredTime),
 	}
 	return rsp, nil
+}
+
+func validateLoginMemberRequest(req *pb.LoginMemberRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := vld.ValidateMembername(req.GetMembername()); err != nil {
+		violations = append(violations, fieldViolation("membername", err))
+	}
+
+	if err := vld.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+	}
+
+	return violations
 }
