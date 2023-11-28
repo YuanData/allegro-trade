@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -50,4 +51,98 @@ func TestGetMember(t *testing.T) {
 	require.Equal(t, member1.Email, member2.Email)
 	require.WithinDuration(t, member1.PasswordChangedTime, member2.PasswordChangedTime, time.Second)
 	require.WithinDuration(t, member1.CreatedTime, member2.CreatedTime, time.Second)
+}
+
+func TestUpdateMemberOnlyNameEntire(t *testing.T) {
+	oldMember := createRandomMember(t)
+
+	newNameEntire := util.RandomHolder()
+	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+		Membername: oldMember.Membername,
+		NameEntire: sql.NullString{
+			String: newNameEntire,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldMember.NameEntire, updatedMember.NameEntire)
+	require.Equal(t, newNameEntire, updatedMember.NameEntire)
+	require.Equal(t, oldMember.Email, updatedMember.Email)
+	require.Equal(t, oldMember.PasswordHash, updatedMember.PasswordHash)
+}
+
+func TestUpdateMemberOnlyEmail(t *testing.T) {
+	oldMember := createRandomMember(t)
+
+	newEmail := util.RandomEmail()
+	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+		Membername: oldMember.Membername,
+		Email: sql.NullString{
+			String: newEmail,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldMember.Email, updatedMember.Email)
+	require.Equal(t, newEmail, updatedMember.Email)
+	require.Equal(t, oldMember.NameEntire, updatedMember.NameEntire)
+	require.Equal(t, oldMember.PasswordHash, updatedMember.PasswordHash)
+}
+
+func TestUpdateMemberOnlyPassword(t *testing.T) {
+	oldMember := createRandomMember(t)
+
+	newPassword := util.RandomString(8)
+	newPasswordHash, err := util.HashPassword(newPassword)
+	require.NoError(t, err)
+
+	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+		Membername: oldMember.Membername,
+		PasswordHash: sql.NullString{
+			String: newPasswordHash,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldMember.PasswordHash, updatedMember.PasswordHash)
+	require.Equal(t, newPasswordHash, updatedMember.PasswordHash)
+	require.Equal(t, oldMember.NameEntire, updatedMember.NameEntire)
+	require.Equal(t, oldMember.Email, updatedMember.Email)
+}
+
+func TestUpdateMemberAllFields(t *testing.T) {
+	oldMember := createRandomMember(t)
+
+	newNameEntire := util.RandomHolder()
+	newEmail := util.RandomEmail()
+	newPassword := util.RandomString(8)
+	newPasswordHash, err := util.HashPassword(newPassword)
+	require.NoError(t, err)
+
+	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+		Membername: oldMember.Membername,
+		NameEntire: sql.NullString{
+			String: newNameEntire,
+			Valid:  true,
+		},
+		Email: sql.NullString{
+			String: newEmail,
+			Valid:  true,
+		},
+		PasswordHash: sql.NullString{
+			String: newPasswordHash,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldMember.PasswordHash, updatedMember.PasswordHash)
+	require.Equal(t, newPasswordHash, updatedMember.PasswordHash)
+	require.NotEqual(t, oldMember.Email, updatedMember.Email)
+	require.Equal(t, newEmail, updatedMember.Email)
+	require.NotEqual(t, oldMember.NameEntire, updatedMember.NameEntire)
+	require.Equal(t, newNameEntire, updatedMember.NameEntire)
 }

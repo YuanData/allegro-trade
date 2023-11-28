@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	AllegroTrade_CreateMember_FullMethodName = "/pb.AllegroTrade/CreateMember"
+	AllegroTrade_UpdateMember_FullMethodName = "/pb.AllegroTrade/UpdateMember"
 	AllegroTrade_LoginMember_FullMethodName  = "/pb.AllegroTrade/LoginMember"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AllegroTradeClient interface {
 	CreateMember(ctx context.Context, in *CreateMemberRequest, opts ...grpc.CallOption) (*CreateMemberResponse, error)
+	UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...grpc.CallOption) (*UpdateMemberResponse, error)
 	LoginMember(ctx context.Context, in *LoginMemberRequest, opts ...grpc.CallOption) (*LoginMemberResponse, error)
 }
 
@@ -48,6 +50,15 @@ func (c *allegroTradeClient) CreateMember(ctx context.Context, in *CreateMemberR
 	return out, nil
 }
 
+func (c *allegroTradeClient) UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...grpc.CallOption) (*UpdateMemberResponse, error) {
+	out := new(UpdateMemberResponse)
+	err := c.cc.Invoke(ctx, AllegroTrade_UpdateMember_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *allegroTradeClient) LoginMember(ctx context.Context, in *LoginMemberRequest, opts ...grpc.CallOption) (*LoginMemberResponse, error) {
 	out := new(LoginMemberResponse)
 	err := c.cc.Invoke(ctx, AllegroTrade_LoginMember_FullMethodName, in, out, opts...)
@@ -62,6 +73,7 @@ func (c *allegroTradeClient) LoginMember(ctx context.Context, in *LoginMemberReq
 // for forward compatibility
 type AllegroTradeServer interface {
 	CreateMember(context.Context, *CreateMemberRequest) (*CreateMemberResponse, error)
+	UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error)
 	LoginMember(context.Context, *LoginMemberRequest) (*LoginMemberResponse, error)
 	mustEmbedUnimplementedAllegroTradeServer()
 }
@@ -72,6 +84,9 @@ type UnimplementedAllegroTradeServer struct {
 
 func (UnimplementedAllegroTradeServer) CreateMember(context.Context, *CreateMemberRequest) (*CreateMemberResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMember not implemented")
+}
+func (UnimplementedAllegroTradeServer) UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMember not implemented")
 }
 func (UnimplementedAllegroTradeServer) LoginMember(context.Context, *LoginMemberRequest) (*LoginMemberResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginMember not implemented")
@@ -107,6 +122,24 @@ func _AllegroTrade_CreateMember_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AllegroTrade_UpdateMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AllegroTradeServer).UpdateMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AllegroTrade_UpdateMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AllegroTradeServer).UpdateMember(ctx, req.(*UpdateMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AllegroTrade_LoginMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginMemberRequest)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var AllegroTrade_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateMember",
 			Handler:    _AllegroTrade_CreateMember_Handler,
+		},
+		{
+			MethodName: "UpdateMember",
+			Handler:    _AllegroTrade_UpdateMember_Handler,
 		},
 		{
 			MethodName: "LoginMember",

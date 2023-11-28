@@ -4,6 +4,7 @@ package pb;
 
 import "google/api/annotations.proto";
 import "rpc_create_member.proto";
+import "rpc_update_member.proto";
 import "rpc_login_member.proto";
 
 option go_package = "github.com/YuanData/allegro-trade/pb";
@@ -12,6 +13,12 @@ service AllegroTrade {
     rpc CreateMember (CreateMemberRequest) returns (CreateMemberResponse) {
         option (google.api.http) = {
             post: "/v1/create_member"
+            body: "*"
+        };
+    }
+    rpc UpdateMember (UpdateMemberRequest) returns (UpdateMemberResponse) {
+        option (google.api.http) = {
+            patch: "/v1/update_member"
             body: "*"
         };
     }

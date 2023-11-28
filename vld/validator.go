@@ -8,7 +8,7 @@ import (
 
 var (
 	isValidMembername = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
-	isValidNameEntire = regexp.MustCompile(`^[a-zA-Z\\s]+$`).MatchString
+	isValidNameEntire = regexp.MustCompile(`^[a-zA-Z\s]+$`).MatchString
 )
 
 func ValidateString(value string, minLength int, maxLength int) error {
