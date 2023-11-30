@@ -15,10 +15,18 @@ import (
 )
 
 func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequest) (*pb.UpdateMemberResponse, error) {
+	authPayload, err := server.authorizeMember(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
 
 	violations := validateUpdateMemberRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
+	}
+
+	if authPayload.Membername != req.GetMembername() {
+		return nil, status.Errorf(codes.PermissionDenied, "update member failed")
 	}
 
 	arg := db.UpdateMemberParams{
