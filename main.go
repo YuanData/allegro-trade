@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/YuanData/allegro-trade/api"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/gapi"
@@ -25,12 +27,16 @@ import (
 func main() {
 	config, err := util.LoadConfig(".")
 	if err != nil {
-		log.Fatal("load config err: ", err)
+		log.Fatal().Err(err).Msg("load config err")
+	}
+
+	if config.Env == "dev" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal("sql open err: ", err)
+		log.Fatal().Err(err).Msg("sql open err")
 	}
 
 	runDBMigration(config.MigrationURL, config.DBSource)
@@ -43,42 +49,43 @@ func main() {
 func runDBMigration(migrationURL string, dbSource string) {
 	migration, err := migrate.New(migrationURL, dbSource)
 	if err != nil {
-		log.Fatal("Unable to init a new migration instance::", err)
+		log.Fatal().Err(err).Msg("Unable to init a new migration instance")
 	}
 
 	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal("Migration upgrade execution failed:", err)
+		log.Fatal().Err(err).Msg("Migration upgrade execution failed")
 	}
 
-	log.Println("Successfully completed DB migration")
+	log.Info().Msg("Successfully completed DB migration")
 }
 
 func runGrpcServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatal("server err: ", err)
+		log.Fatal().Err(err).Msg("server err")
 	}
 
-	grpcServer := grpc.NewServer()
+	gprcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
+	grpcServer := grpc.NewServer(gprcLogger)
 	pb.RegisterAllegroTradeServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
 	if err != nil {
-		log.Fatal("listener err: :", err)
+		log.Fatal().Err(err).Msg("listener err")
 	}
 
-	log.Printf("gRPC Addr: %s", listener.Addr().String())
+	log.Info().Msgf("gRPC Addr: %s", listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal("gRPC server err:", err)
+		log.Fatal().Err(err).Msg("gRPC server err")
 	}
 }
 
 func runGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatal("server err: ", err)
+		log.Fatal().Err(err).Msg("server err")
 	}
 
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -97,7 +104,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	err = pb.RegisterAllegroTradeHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatal("register handler server err:", err)
+		log.Fatal().Err(err).Msg("register handler server err")
 	}
 
 	mux := http.NewServeMux()
@@ -105,24 +112,25 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal("listener err: :", err)
+		log.Fatal().Err(err).Msg("listener err")
 	}
 
-	log.Printf("gateway Addr: %s", listener.Addr().String())
-	err = http.Serve(listener, mux)
+	log.Info().Msgf("gateway Addr: %s", listener.Addr().String())
+	handler := gapi.HttpLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
-		log.Fatal("gateway server err:", err)
+		log.Fatal().Err(err).Msg("gateway server err")
 	}
 }
 
 func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
-		log.Fatal("server err: ", err)
+		log.Fatal().Err(err).Msg("server err")
 	}
 
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal("server start err: ", err)
+		log.Fatal().Err(err).Msg("server start err")
 	}
 }

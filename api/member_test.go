@@ -277,8 +277,6 @@ func TestLoginMemberAPI(t *testing.T) {
 			body: gin.H{
 				"membername":  "wrong-member-name#",
 				"password":  password,
-				"name_entire": member.NameEntire,
-				"email":     member.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
