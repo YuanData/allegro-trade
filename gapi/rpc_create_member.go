@@ -2,12 +2,15 @@ package gapi
 
 import (
 	"context"
+	"time"
 
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
 	"github.com/YuanData/allegro-trade/vld"
+	"github.com/YuanData/allegro-trade/worker"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -40,6 +43,19 @@ func (server *Server) CreateMember(ctx context.Context, req *pb.CreateMemberRequ
 			}
 		}
 		return nil, status.Errorf(codes.Internal, "create member err: %s", err)
+	}
+
+	taskPayload := &worker.PayloadSendVerifyEmail{
+		Membername: member.Membername,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to distribute task to send verify email: %s", err)
 	}
 
 	rsp := &pb.CreateMemberResponse{
