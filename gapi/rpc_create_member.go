@@ -27,14 +27,28 @@ func (server *Server) CreateMember(ctx context.Context, req *pb.CreateMemberRequ
 		return nil, status.Errorf(codes.Internal, "gen hash err: %s", err)
 	}
 
-	arg := db.CreateMemberParams{
-		Membername:       req.GetMembername(),
-		PasswordHash: hashedPassword,
-		NameEntire:       req.GetNameEntire(),
-		Email:          req.GetEmail(),
+	arg := db.CreateMemberTxParams{
+		CreateMemberParams: db.CreateMemberParams{
+			Membername:       req.GetMembername(),
+			PasswordHash: hashedPassword,
+			NameEntire:       req.GetNameEntire(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(member db.Member) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Membername: member.Membername,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
 
-	member, err := server.store.CreateMember(ctx, arg)
+	txResult, err := server.store.CreateMemberTx(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -45,21 +59,8 @@ func (server *Server) CreateMember(ctx context.Context, req *pb.CreateMemberRequ
 		return nil, status.Errorf(codes.Internal, "create member err: %s", err)
 	}
 
-	taskPayload := &worker.PayloadSendVerifyEmail{
-		Membername: member.Membername,
-	}
-	opts := []asynq.Option{
-		asynq.MaxRetry(10),
-		asynq.ProcessIn(10 * time.Second),
-		asynq.Queue(worker.QueueCritical),
-	}
-	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to distribute task to send verify email: %s", err)
-	}
-
 	rsp := &pb.CreateMemberResponse{
-		Member: convertMember(member),
+		Member: convertMember(txResult.Member),
 	}
 	return rsp, nil
 }
