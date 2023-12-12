@@ -7,6 +7,8 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
+	db "github.com/YuanData/allegro-trade/db/sqlc"
+	"github.com/YuanData/allegro-trade/util"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
@@ -45,6 +47,26 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	member, err := processor.store.GetMember(ctx, payload.Membername)
 	if err != nil {
 		return fmt.Errorf("failed to get member: %w", err)
+	}
+
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		Membername:   member.Membername,
+		Email:      member.Email,
+		SecretCode: util.RandomString(32),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Subject"
+	verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email??id=%d&secret_code=%s",
+		verifyEmail.ID, verifyEmail.SecretCode)
+	content := fmt.Sprintf("%s %s", member.NameEntire, verifyUrl)
+	to := []string{member.Email}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send verify email: %w", err)
 	}
 
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).

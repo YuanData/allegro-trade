@@ -25,6 +25,7 @@ type Member struct {
 	Email               string    `json:"email"`
 	PasswordChangedTime time.Time `json:"password_changed_time"`
 	CreatedTime         time.Time `json:"created_time"`
+	IsEmailVerified     bool      `json:"is_email_verified"`
 }
 
 type Record struct {
@@ -53,4 +54,14 @@ type Trader struct {
 	Rest        int64     `json:"rest"`
 	Symbol      string    `json:"symbol"`
 	CreatedTime time.Time `json:"created_time"`
+}
+
+type VerifyEmail struct {
+	ID          int64     `json:"id"`
+	Membername  string    `json:"membername"`
+	Email       string    `json:"email"`
+	SecretCode  string    `json:"secret_code"`
+	IsUsed      bool      `json:"is_used"`
+	CreatedTime time.Time `json:"created_time"`
+	ExpiredTime time.Time `json:"expired_time"`
 }

@@ -17,6 +17,7 @@ type Querier interface {
 	CreateRecord(ctx context.Context, arg CreateRecordParams) (Record, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTrader(ctx context.Context, arg CreateTraderParams) (Trader, error)
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteTrader(ctx context.Context, id int64) error
 	GetDetail(ctx context.Context, id int64) (Detail, error)
 	GetMember(ctx context.Context, membername string) (Member, error)

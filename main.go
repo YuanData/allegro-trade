@@ -18,6 +18,7 @@ import (
 	"github.com/YuanData/allegro-trade/api"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/gapi"
+	"github.com/YuanData/allegro-trade/mail"
 	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
 	"github.com/YuanData/allegro-trade/worker"
@@ -50,7 +51,7 @@ func main() {
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(redisOpt, store)
+	go runTaskProcessor(config, redisOpt, store)
 	go runGatewayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
 }
@@ -68,8 +69,9 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msg("Successfully completed DB migration")
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {
