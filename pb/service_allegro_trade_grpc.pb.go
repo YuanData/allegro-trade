@@ -22,6 +22,7 @@ const (
 	AllegroTrade_CreateMember_FullMethodName = "/pb.AllegroTrade/CreateMember"
 	AllegroTrade_UpdateMember_FullMethodName = "/pb.AllegroTrade/UpdateMember"
 	AllegroTrade_LoginMember_FullMethodName  = "/pb.AllegroTrade/LoginMember"
+	AllegroTrade_VerifyEmail_FullMethodName  = "/pb.AllegroTrade/VerifyEmail"
 )
 
 // AllegroTradeClient is the client API for AllegroTrade service.
@@ -31,6 +32,7 @@ type AllegroTradeClient interface {
 	CreateMember(ctx context.Context, in *CreateMemberRequest, opts ...grpc.CallOption) (*CreateMemberResponse, error)
 	UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...grpc.CallOption) (*UpdateMemberResponse, error)
 	LoginMember(ctx context.Context, in *LoginMemberRequest, opts ...grpc.CallOption) (*LoginMemberResponse, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 }
 
 type allegroTradeClient struct {
@@ -68,6 +70,15 @@ func (c *allegroTradeClient) LoginMember(ctx context.Context, in *LoginMemberReq
 	return out, nil
 }
 
+func (c *allegroTradeClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, AllegroTrade_VerifyEmail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AllegroTradeServer is the server API for AllegroTrade service.
 // All implementations must embed UnimplementedAllegroTradeServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type AllegroTradeServer interface {
 	CreateMember(context.Context, *CreateMemberRequest) (*CreateMemberResponse, error)
 	UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error)
 	LoginMember(context.Context, *LoginMemberRequest) (*LoginMemberResponse, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	mustEmbedUnimplementedAllegroTradeServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedAllegroTradeServer) UpdateMember(context.Context, *UpdateMemb
 }
 func (UnimplementedAllegroTradeServer) LoginMember(context.Context, *LoginMemberRequest) (*LoginMemberResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginMember not implemented")
+}
+func (UnimplementedAllegroTradeServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
 }
 func (UnimplementedAllegroTradeServer) mustEmbedUnimplementedAllegroTradeServer() {}
 
@@ -158,6 +173,24 @@ func _AllegroTrade_LoginMember_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AllegroTrade_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AllegroTradeServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AllegroTrade_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AllegroTradeServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AllegroTrade_ServiceDesc is the grpc.ServiceDesc for AllegroTrade service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var AllegroTrade_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginMember",
 			Handler:    _AllegroTrade_LoginMember_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _AllegroTrade_VerifyEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

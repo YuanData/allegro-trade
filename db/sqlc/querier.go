@@ -30,6 +30,7 @@ type Querier interface {
 	ListTraders(ctx context.Context, arg ListTradersParams) ([]Trader, error)
 	UpdateMember(ctx context.Context, arg UpdateMemberParams) (Member, error)
 	UpdateTrader(ctx context.Context, arg UpdateTraderParams) (Trader, error)
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 }
 
 var _ Querier = (*Queries)(nil)
