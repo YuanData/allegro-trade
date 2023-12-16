@@ -15,7 +15,7 @@ func createRandomDetail(t *testing.T, trader Trader) Detail {
 		Number:    util.RandomAmount(),
 	}
 
-	detail, err := testQueries.CreateDetail(context.Background(), arg)
+	detail, err := testStore.CreateDetail(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, detail)
 
@@ -36,7 +36,7 @@ func TestCreateDetail(t *testing.T) {
 func TestGetDetail(t *testing.T) {
 	trader := createRandomTrader(t)
 	detail1 := createRandomDetail(t, trader)
-	detail2, err := testQueries.GetDetail(context.Background(), detail1.ID)
+	detail2, err := testStore.GetDetail(context.Background(), detail1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, detail2)
 
@@ -58,7 +58,7 @@ func TestListDetails(t *testing.T) {
 		Offset:    2,
 	}
 
-	details, err := testQueries.ListDetails(context.Background(), arg)
+	details, err := testStore.ListDetails(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, details, 2)
 

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -60,7 +59,7 @@ func (server *Server) createRecord(ctx *gin.Context) {
 func (server *Server) validTrader(ctx *gin.Context, traderID int64, symbol string) (db.Trader, bool) {
 	trader, err := server.store.GetTrader(ctx, traderID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return trader, false
 		}

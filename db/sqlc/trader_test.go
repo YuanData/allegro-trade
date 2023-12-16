@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ func createRandomTrader(t *testing.T) Trader {
 		Symbol: util.RandomSymbol(),
 	}
 
-	trader, err := testQueries.CreateTrader(context.Background(), arg)
+	trader, err := testStore.CreateTrader(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, trader)
 
@@ -39,7 +38,7 @@ func TestCreateTrader(t *testing.T) {
 
 func TestGetTrader(t *testing.T) {
 	trader1 := createRandomTrader(t)
-	trader2, err := testQueries.GetTrader(context.Background(), trader1.ID)
+	trader2, err := testStore.GetTrader(context.Background(), trader1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, trader2)
 
@@ -58,7 +57,7 @@ func TestUpdateTrader(t *testing.T) {
 		Rest: util.RandomAmount(),
 	}
 
-	trader2, err := testQueries.UpdateTrader(context.Background(), arg)
+	trader2, err := testStore.UpdateTrader(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, trader2)
 
@@ -71,12 +70,12 @@ func TestUpdateTrader(t *testing.T) {
 
 func TestDeleteTrader(t *testing.T) {
 	trader1 := createRandomTrader(t)
-	err := testQueries.DeleteTrader(context.Background(), trader1.ID)
+	err := testStore.DeleteTrader(context.Background(), trader1.ID)
 	require.NoError(t, err)
 
-	trader2, err := testQueries.GetTrader(context.Background(), trader1.ID)
+	trader2, err := testStore.GetTrader(context.Background(), trader1.ID)
 	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, ErrRecordNotFound.Error())
 	require.Empty(t, trader2)
 }
 
@@ -92,7 +91,7 @@ func TestListTraders(t *testing.T) {
 		Offset: 0,
 	}
 
-	traders, err := testQueries.ListTraders(context.Background(), arg)
+	traders, err := testStore.ListTraders(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, traders)
 

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -89,7 +89,7 @@ func TestGetTraderAPI(t *testing.T) {
 				store.EXPECT().
 					GetTrader(gomock.Any(), gomock.Eq(trader.ID)).
 					Times(1).
-					Return(db.Trader{}, sql.ErrNoRows)
+					Return(db.Trader{}, db.ErrRecordNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -428,7 +428,7 @@ func randomTrader(holder string) db.Trader {
 }
 
 func verifyResponseBufferTrader(t *testing.T, body *bytes.Buffer, trader db.Trader) {
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
 	var gotTrader db.Trader
@@ -438,7 +438,7 @@ func verifyResponseBufferTrader(t *testing.T, body *bytes.Buffer, trader db.Trad
 }
 
 func verifyResponseBufferTraders(t *testing.T, body *bytes.Buffer, traders []db.Trader) {
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
 	var gotTraders []db.Trader

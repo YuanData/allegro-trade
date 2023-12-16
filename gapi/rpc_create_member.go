@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/lib/pq"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
@@ -50,11 +49,8 @@ func (server *Server) CreateMember(ctx context.Context, req *pb.CreateMemberRequ
 
 	txResult, err := server.store.CreateMemberTx(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Errorf(codes.AlreadyExists, "membername AlreadyExists err: %s", err)
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, status.Errorf(codes.AlreadyExists, err.Error())
 		}
 		return nil, status.Errorf(codes.Internal, "create member err: %s", err)
 	}

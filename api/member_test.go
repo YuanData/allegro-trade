@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -13,7 +13,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
-	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 	mockdb "github.com/YuanData/allegro-trade/db/mock"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
@@ -111,7 +110,7 @@ func TestCreateMemberAPI(t *testing.T) {
 				store.EXPECT().
 					CreateMember(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.Member{}, &pq.Error{Code: "23505"})
+					Return(db.Member{}, db.ErrUniqueViolation)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
@@ -234,7 +233,7 @@ func TestLoginMemberAPI(t *testing.T) {
 				store.EXPECT().
 					GetMember(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.Member{}, sql.ErrNoRows)
+					Return(db.Member{}, db.ErrRecordNotFound)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -275,8 +274,8 @@ func TestLoginMemberAPI(t *testing.T) {
 		{
 			name: "WrongMemberName",
 			body: gin.H{
-				"membername":  "wrong-member-name#",
-				"password":  password,
+				"membername": "wrong-member-name#",
+				"password": password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -330,7 +329,7 @@ func randomMember(t *testing.T) (member db.Member, password string) {
 }
 
 func requireBodyMatchMember(t *testing.T, body *bytes.Buffer, member db.Member) {
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
 	var gotMember db.Member

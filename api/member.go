@@ -1,13 +1,12 @@
 package api
 
 import (
-	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/util"
 )
@@ -59,12 +58,9 @@ func (server *Server) createMember(ctx *gin.Context) {
 
 	member, err := server.store.CreateMember(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
-				return
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -97,7 +93,7 @@ func (server *Server) loginMember(ctx *gin.Context) {
 
 	member, err := server.store.GetMember(ctx, req.Membername)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}

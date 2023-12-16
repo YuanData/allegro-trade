@@ -2,9 +2,10 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/pb"
 	"github.com/YuanData/allegro-trade/util"
@@ -31,11 +32,11 @@ func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequ
 
 	arg := db.UpdateMemberParams{
 		Membername: req.GetMembername(),
-		NameEntire: sql.NullString{
+		NameEntire: pgtype.Text{
 			String: req.GetNameEntire(),
 			Valid:  req.NameEntire != nil,
 		},
-		Email: sql.NullString{
+		Email: pgtype.Text{
 			String: req.GetEmail(),
 			Valid:  req.Email != nil,
 		},
@@ -47,12 +48,12 @@ func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequ
 			return nil, status.Errorf(codes.Internal, "gen hash err: %s", err)
 		}
 
-		arg.PasswordHash = sql.NullString{
+		arg.PasswordHash = pgtype.Text{
 			String: hashedPassword,
 			Valid:  true,
 		}
 
-		arg.PasswordChangedTime = sql.NullTime{
+		arg.PasswordChangedTime = pgtype.Timestamptz{
 			Time:  time.Now(),
 			Valid: true,
 		}
@@ -60,7 +61,7 @@ func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequ
 
 	member, err := server.store.UpdateMember(ctx, arg)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "member NotFound err")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to update member: %s", err)

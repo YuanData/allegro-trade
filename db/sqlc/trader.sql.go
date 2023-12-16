@@ -22,7 +22,7 @@ type AddTraderRestParams struct {
 }
 
 func (q *Queries) AddTraderRest(ctx context.Context, arg AddTraderRestParams) (Trader, error) {
-	row := q.db.QueryRowContext(ctx, addTraderRest, arg.Number, arg.ID)
+	row := q.db.QueryRow(ctx, addTraderRest, arg.Number, arg.ID)
 	var i Trader
 	err := row.Scan(
 		&i.ID,
@@ -51,7 +51,7 @@ type CreateTraderParams struct {
 }
 
 func (q *Queries) CreateTrader(ctx context.Context, arg CreateTraderParams) (Trader, error) {
-	row := q.db.QueryRowContext(ctx, createTrader, arg.Holder, arg.Rest, arg.Symbol)
+	row := q.db.QueryRow(ctx, createTrader, arg.Holder, arg.Rest, arg.Symbol)
 	var i Trader
 	err := row.Scan(
 		&i.ID,
@@ -69,7 +69,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteTrader(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteTrader, id)
+	_, err := q.db.Exec(ctx, deleteTrader, id)
 	return err
 }
 
@@ -79,7 +79,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetTrader(ctx context.Context, id int64) (Trader, error) {
-	row := q.db.QueryRowContext(ctx, getTrader, id)
+	row := q.db.QueryRow(ctx, getTrader, id)
 	var i Trader
 	err := row.Scan(
 		&i.ID,
@@ -98,7 +98,7 @@ FOR NO KEY UPDATE
 `
 
 func (q *Queries) GetTraderForUpdate(ctx context.Context, id int64) (Trader, error) {
-	row := q.db.QueryRowContext(ctx, getTraderForUpdate, id)
+	row := q.db.QueryRow(ctx, getTraderForUpdate, id)
 	var i Trader
 	err := row.Scan(
 		&i.ID,
@@ -125,7 +125,7 @@ type ListTradersParams struct {
 }
 
 func (q *Queries) ListTraders(ctx context.Context, arg ListTradersParams) ([]Trader, error) {
-	rows, err := q.db.QueryContext(ctx, listTraders, arg.Holder, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listTraders, arg.Holder, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -143,9 +143,6 @@ func (q *Queries) ListTraders(ctx context.Context, arg ListTradersParams) ([]Tra
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -166,7 +163,7 @@ type UpdateTraderParams struct {
 }
 
 func (q *Queries) UpdateTrader(ctx context.Context, arg UpdateTraderParams) (Trader, error) {
-	row := q.db.QueryRowContext(ctx, updateTrader, arg.ID, arg.Rest)
+	row := q.db.QueryRow(ctx, updateTrader, arg.ID, arg.Rest)
 	var i Trader
 	err := row.Scan(
 		&i.ID,

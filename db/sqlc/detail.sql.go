@@ -24,7 +24,7 @@ type CreateDetailParams struct {
 }
 
 func (q *Queries) CreateDetail(ctx context.Context, arg CreateDetailParams) (Detail, error) {
-	row := q.db.QueryRowContext(ctx, createDetail, arg.TraderID, arg.Number)
+	row := q.db.QueryRow(ctx, createDetail, arg.TraderID, arg.Number)
 	var i Detail
 	err := row.Scan(
 		&i.ID,
@@ -41,7 +41,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetDetail(ctx context.Context, id int64) (Detail, error) {
-	row := q.db.QueryRowContext(ctx, getDetail, id)
+	row := q.db.QueryRow(ctx, getDetail, id)
 	var i Detail
 	err := row.Scan(
 		&i.ID,
@@ -67,7 +67,7 @@ type ListDetailsParams struct {
 }
 
 func (q *Queries) ListDetails(ctx context.Context, arg ListDetailsParams) ([]Detail, error) {
-	rows, err := q.db.QueryContext(ctx, listDetails, arg.TraderID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listDetails, arg.TraderID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +84,6 @@ func (q *Queries) ListDetails(ctx context.Context, arg ListDetailsParams) ([]Det
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

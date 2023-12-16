@@ -16,7 +16,7 @@ func createRandomRecord(t *testing.T, trader1, trader2 Trader) Record {
 		Number:        util.RandomAmount(),
 	}
 
-	record, err := testQueries.CreateRecord(context.Background(), arg)
+	record, err := testStore.CreateRecord(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, record)
 
@@ -41,7 +41,7 @@ func TestGetRecord(t *testing.T) {
 	trader2 := createRandomTrader(t)
 	record1 := createRandomRecord(t, trader1, trader2)
 
-	record2, err := testQueries.GetRecord(context.Background(), record1.ID)
+	record2, err := testStore.GetRecord(context.Background(), record1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, record2)
 
@@ -68,7 +68,7 @@ func TestListRecord(t *testing.T) {
 		Offset:        2,
 	}
 
-	records, err := testQueries.ListRecords(context.Background(), arg)
+	records, err := testStore.ListRecords(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, records, 2)
 

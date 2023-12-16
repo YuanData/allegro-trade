@@ -26,7 +26,7 @@ type CreateRecordParams struct {
 }
 
 func (q *Queries) CreateRecord(ctx context.Context, arg CreateRecordParams) (Record, error) {
-	row := q.db.QueryRowContext(ctx, createRecord, arg.FromTraderID, arg.ToTraderID, arg.Number)
+	row := q.db.QueryRow(ctx, createRecord, arg.FromTraderID, arg.ToTraderID, arg.Number)
 	var i Record
 	err := row.Scan(
 		&i.ID,
@@ -44,7 +44,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRecord(ctx context.Context, id int64) (Record, error) {
-	row := q.db.QueryRowContext(ctx, getRecord, id)
+	row := q.db.QueryRow(ctx, getRecord, id)
 	var i Record
 	err := row.Scan(
 		&i.ID,
@@ -74,7 +74,7 @@ type ListRecordsParams struct {
 }
 
 func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Record, error) {
-	rows, err := q.db.QueryContext(ctx, listRecords,
+	rows, err := q.db.Query(ctx, listRecords,
 		arg.FromTraderID,
 		arg.ToTraderID,
 		arg.Limit,
@@ -97,9 +97,6 @@ func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Rec
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

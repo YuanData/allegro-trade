@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 	"github.com/YuanData/allegro-trade/util"
 )
@@ -21,7 +21,7 @@ func createRandomMember(t *testing.T) Member {
 		Email:          util.RandomEmail(),
 	}
 
-	member, err := testQueries.CreateMember(context.Background(), arg)
+	member, err := testStore.CreateMember(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, member)
 
@@ -41,7 +41,7 @@ func TestCreateMember(t *testing.T) {
 
 func TestGetMember(t *testing.T) {
 	member1 := createRandomMember(t)
-	member2, err := testQueries.GetMember(context.Background(), member1.Membername)
+	member2, err := testStore.GetMember(context.Background(), member1.Membername)
 	require.NoError(t, err)
 	require.NotEmpty(t, member2)
 
@@ -57,9 +57,9 @@ func TestUpdateMemberOnlyNameEntire(t *testing.T) {
 	oldMember := createRandomMember(t)
 
 	newNameEntire := util.RandomHolder()
-	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+	updatedMember, err := testStore.UpdateMember(context.Background(), UpdateMemberParams{
 		Membername: oldMember.Membername,
-		NameEntire: sql.NullString{
+		NameEntire: pgtype.Text{
 			String: newNameEntire,
 			Valid:  true,
 		},
@@ -76,9 +76,9 @@ func TestUpdateMemberOnlyEmail(t *testing.T) {
 	oldMember := createRandomMember(t)
 
 	newEmail := util.RandomEmail()
-	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+	updatedMember, err := testStore.UpdateMember(context.Background(), UpdateMemberParams{
 		Membername: oldMember.Membername,
-		Email: sql.NullString{
+		Email: pgtype.Text{
 			String: newEmail,
 			Valid:  true,
 		},
@@ -98,9 +98,9 @@ func TestUpdateMemberOnlyPassword(t *testing.T) {
 	newPasswordHash, err := util.HashPassword(newPassword)
 	require.NoError(t, err)
 
-	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+	updatedMember, err := testStore.UpdateMember(context.Background(), UpdateMemberParams{
 		Membername: oldMember.Membername,
-		PasswordHash: sql.NullString{
+		PasswordHash: pgtype.Text{
 			String: newPasswordHash,
 			Valid:  true,
 		},
@@ -122,17 +122,17 @@ func TestUpdateMemberAllFields(t *testing.T) {
 	newPasswordHash, err := util.HashPassword(newPassword)
 	require.NoError(t, err)
 
-	updatedMember, err := testQueries.UpdateMember(context.Background(), UpdateMemberParams{
+	updatedMember, err := testStore.UpdateMember(context.Background(), UpdateMemberParams{
 		Membername: oldMember.Membername,
-		NameEntire: sql.NullString{
+		NameEntire: pgtype.Text{
 			String: newNameEntire,
 			Valid:  true,
 		},
-		Email: sql.NullString{
+		Email: pgtype.Text{
 			String: newEmail,
 			Valid:  true,
 		},
-		PasswordHash: sql.NullString{
+		PasswordHash: pgtype.Text{
 			String: newPasswordHash,
 			Valid:  true,
 		},

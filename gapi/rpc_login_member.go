@@ -2,7 +2,7 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 
 	db "github.com/YuanData/allegro-trade/db/sqlc"
 	"github.com/YuanData/allegro-trade/pb"
@@ -22,7 +22,7 @@ func (server *Server) LoginMember(ctx context.Context, req *pb.LoginMemberReques
 
 	member, err := server.store.GetMember(ctx, req.GetMembername())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "member NotFound err")
 		}
 		return nil, status.Errorf(codes.Internal, "member Internal err")

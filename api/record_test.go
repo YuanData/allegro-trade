@@ -116,7 +116,7 @@ func TestRecordAPI(t *testing.T) {
 				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(db.Trader{}, sql.ErrNoRows)
+				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(db.Trader{}, db.ErrRecordNotFound)
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader2.ID)).Times(0)
 				store.EXPECT().RecordTx(gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -137,7 +137,7 @@ func TestRecordAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)
-				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader2.ID)).Times(1).Return(db.Trader{}, sql.ErrNoRows)
+				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader2.ID)).Times(1).Return(db.Trader{}, db.ErrRecordNotFound)
 				store.EXPECT().RecordTx(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {

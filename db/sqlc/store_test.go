@@ -8,8 +8,6 @@ import (
 )
 
 func TestRecordTx(t *testing.T) {
-	store := NewStore(testDB)
-
 	trader1 := createRandomTrader(t)
 	trader2 := createRandomTrader(t)
 
@@ -21,7 +19,7 @@ func TestRecordTx(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		go func() {
-			result, err := store.RecordTx(context.Background(), RecordTxParams{
+			result, err := testStore.RecordTx(context.Background(), RecordTxParams{
 				FromTraderID: trader1.ID,
 				ToTraderID:   trader2.ID,
 				Number:        number,
@@ -49,7 +47,7 @@ func TestRecordTx(t *testing.T) {
 		require.NotZero(t, record.ID)
 		require.NotZero(t, record.CreatedTime)
 
-		_, err = store.GetRecord(context.Background(), record.ID)
+		_, err = testStore.GetRecord(context.Background(), record.ID)
 		require.NoError(t, err)
 
 		fromDetail := result.FromDetail
@@ -59,7 +57,7 @@ func TestRecordTx(t *testing.T) {
 		require.NotZero(t, fromDetail.ID)
 		require.NotZero(t, fromDetail.CreatedTime)
 
-		_, err = store.GetDetail(context.Background(), fromDetail.ID)
+		_, err = testStore.GetDetail(context.Background(), fromDetail.ID)
 		require.NoError(t, err)
 
 		toDetail := result.ToDetail
@@ -69,7 +67,7 @@ func TestRecordTx(t *testing.T) {
 		require.NotZero(t, toDetail.ID)
 		require.NotZero(t, toDetail.CreatedTime)
 
-		_, err = store.GetDetail(context.Background(), toDetail.ID)
+		_, err = testStore.GetDetail(context.Background(), toDetail.ID)
 		require.NoError(t, err)
 
 		fromTrader := result.FromTrader
@@ -92,10 +90,10 @@ func TestRecordTx(t *testing.T) {
 		existed[k] = true
 	}
 
-	updatedTrader1, err := store.GetTrader(context.Background(), trader1.ID)
+	updatedTrader1, err := testStore.GetTrader(context.Background(), trader1.ID)
 	require.NoError(t, err)
 
-	updatedTrader2, err := store.GetTrader(context.Background(), trader2.ID)
+	updatedTrader2, err := testStore.GetTrader(context.Background(), trader2.ID)
 	require.NoError(t, err)
 
 
@@ -104,8 +102,6 @@ func TestRecordTx(t *testing.T) {
 }
 
 func TestRecordTxDeadlock(t *testing.T) {
-	store := NewStore(testDB)
-
 	trader1 := createRandomTrader(t)
 	trader2 := createRandomTrader(t)
 
@@ -123,7 +119,7 @@ func TestRecordTxDeadlock(t *testing.T) {
 		}
 
 		go func() {
-			_, err := store.RecordTx(context.Background(), RecordTxParams{
+			_, err := testStore.RecordTx(context.Background(), RecordTxParams{
 				FromTraderID: fromTraderID,
 				ToTraderID:   toTraderID,
 				Number:        number,
@@ -138,10 +134,10 @@ func TestRecordTxDeadlock(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	updatedTrader1, err := store.GetTrader(context.Background(), trader1.ID)
+	updatedTrader1, err := testStore.GetTrader(context.Background(), trader1.ID)
 	require.NoError(t, err)
 
-	updatedTrader2, err := store.GetTrader(context.Background(), trader2.ID)
+	updatedTrader2, err := testStore.GetTrader(context.Background(), trader2.ID)
 	require.NoError(t, err)
 
 	require.Equal(t, trader1.Rest, updatedTrader1.Rest)
