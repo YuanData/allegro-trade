@@ -21,8 +21,8 @@ func NewJWTAuthzr(secretKey string) (Authzr, error) {
 	return &JWTAuthzr{secretKey}, nil
 }
 
-func (authzr *JWTAuthzr) CreateToken(membername string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(membername, duration)
+func (authzr *JWTAuthzr) CreateToken(membername string, role string, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(membername, role, duration)
 	if err != nil {
 		return "", payload, err
 	}

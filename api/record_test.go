@@ -49,7 +49,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)
@@ -75,7 +75,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member2.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member2.Membername, member2.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)
@@ -113,7 +113,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(db.Trader{}, db.ErrRecordNotFound)
@@ -133,7 +133,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)
@@ -153,7 +153,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member3.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member3.Membername, member3.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader3.ID)).Times(1).Return(trader3, nil)
@@ -173,7 +173,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)
@@ -193,7 +193,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        "NHK",
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Any()).Times(0)
@@ -212,7 +212,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Any()).Times(0)
@@ -231,7 +231,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Any()).Times(1).Return(db.Trader{}, sql.ErrConnDone)
@@ -250,7 +250,7 @@ func TestRecordAPI(t *testing.T) {
 				"symbol":        util.ETH,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member1.Membername, member1.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetTrader(gomock.Any(), gomock.Eq(trader1.ID)).Times(1).Return(trader1, nil)

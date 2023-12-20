@@ -16,7 +16,7 @@ import (
 )
 
 func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequest) (*pb.UpdateMemberResponse, error) {
-	authPayload, err := server.authorizeMember(ctx)
+	authPayload, err := server.authorizeMember(ctx, []string{util.PriestRole, util.PrayerRole})
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
@@ -26,7 +26,7 @@ func (server *Server) UpdateMember(ctx context.Context, req *pb.UpdateMemberRequ
 		return nil, invalidArgumentError(violations)
 	}
 
-	if authPayload.Membername != req.GetMembername() {
+	if authPayload.Role != util.PriestRole && authPayload.Membername != req.GetMembername() {
 		return nil, status.Errorf(codes.PermissionDenied, "update member failed")
 	}
 

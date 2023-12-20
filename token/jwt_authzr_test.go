@@ -14,12 +14,13 @@ func TestJWTAuthzr(t *testing.T) {
 	require.NoError(t, err)
 
 	membername := util.RandomHolder()
+	role := util.PrayerRole
 	duration := time.Minute
 
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, payload, err := authzr.CreateToken(membername, duration)
+	token, payload, err := authzr.CreateToken(membername, role, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	require.NotEmpty(t, payload)
@@ -30,6 +31,7 @@ func TestJWTAuthzr(t *testing.T) {
 
 	require.NotZero(t, payload.ID)
 	require.Equal(t, membername, payload.Membername)
+	require.Equal(t, role, payload.Role)
 	require.WithinDuration(t, issuedAt, payload.IssuedTime, time.Second)
 	require.WithinDuration(t, expiredAt, payload.ExpiredTime, time.Second)
 }
@@ -38,7 +40,7 @@ func TestExpiredJWTToken(t *testing.T) {
 	authzr, err := NewJWTAuthzr(util.RandomString(32))
 	require.NoError(t, err)
 
-	token, payload, err := authzr.CreateToken(util.RandomHolder(), -time.Minute)
+	token, payload, err := authzr.CreateToken(util.RandomHolder(), util.PrayerRole, -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	require.NotEmpty(t, payload)
@@ -50,7 +52,7 @@ func TestExpiredJWTToken(t *testing.T) {
 }
 
 func TestInvalidJWTTokenAlgNone(t *testing.T) {
-	payload, err := NewPayload(util.RandomHolder(), time.Minute)
+	payload, err := NewPayload(util.RandomHolder(), util.PrayerRole, time.Minute)
 	require.NoError(t, err)
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payload)

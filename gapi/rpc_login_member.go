@@ -35,6 +35,7 @@ func (server *Server) LoginMember(ctx context.Context, req *pb.LoginMemberReques
 
 	accessToken, accessPayload, err := server.tokenAuthzr.CreateToken(
 		member.Membername,
+		member.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -43,6 +44,7 @@ func (server *Server) LoginMember(ctx context.Context, req *pb.LoginMemberReques
 
 	refreshToken, refreshPayload, err := server.tokenAuthzr.CreateToken(
 		member.Membername,
+		member.Role,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {

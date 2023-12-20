@@ -26,6 +26,7 @@ type Member struct {
 	PasswordChangedTime time.Time `json:"password_changed_time"`
 	CreatedTime         time.Time `json:"created_time"`
 	IsEmailVerified     bool      `json:"is_email_verified"`
+	Role                string    `json:"role"`
 }
 
 type Record struct {

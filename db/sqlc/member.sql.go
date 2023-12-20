@@ -19,7 +19,7 @@ INSERT INTO members (
   email
 ) VALUES (
   $1, $2, $3, $4
-) RETURNING membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified
+) RETURNING membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified, role
 `
 
 type CreateMemberParams struct {
@@ -45,12 +45,13 @@ func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (Mem
 		&i.PasswordChangedTime,
 		&i.CreatedTime,
 		&i.IsEmailVerified,
+		&i.Role,
 	)
 	return i, err
 }
 
 const getMember = `-- name: GetMember :one
-SELECT membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified FROM members
+SELECT membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified, role FROM members
 WHERE membername = $1 LIMIT 1
 `
 
@@ -65,6 +66,7 @@ func (q *Queries) GetMember(ctx context.Context, membername string) (Member, err
 		&i.PasswordChangedTime,
 		&i.CreatedTime,
 		&i.IsEmailVerified,
+		&i.Role,
 	)
 	return i, err
 }
@@ -79,7 +81,7 @@ SET
   is_email_verified = COALESCE($5, is_email_verified)
 WHERE
   membername = $6
-RETURNING membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified
+RETURNING membername, password_hash, name_entire, email, password_changed_time, created_time, is_email_verified, role
 `
 
 type UpdateMemberParams struct {
@@ -109,6 +111,7 @@ func (q *Queries) UpdateMember(ctx context.Context, arg UpdateMemberParams) (Mem
 		&i.PasswordChangedTime,
 		&i.CreatedTime,
 		&i.IsEmailVerified,
+		&i.Role,
 	)
 	return i, err
 }

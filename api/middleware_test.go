@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"github.com/YuanData/allegro-trade/token"
+	"github.com/YuanData/allegro-trade/util"
 )
 
 func addAuthztn(
@@ -18,9 +19,10 @@ func addAuthztn(
 	tokenAuthzr token.Authzr,
 	authztnType string,
 	membername string,
+	role string,
 	duration time.Duration,
 ) {
-	token, payload, err := tokenAuthzr.CreateToken(membername, duration)
+	token, payload, err := tokenAuthzr.CreateToken(membername, role, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
@@ -29,6 +31,9 @@ func addAuthztn(
 }
 
 func TestAuthztnMiddleware(t *testing.T) {
+	membername := util.RandomHolder()
+	role := util.PrayerRole
+
 	testCases := []struct {
 		name          string
 		setupAuthztn     func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr)
@@ -37,7 +42,7 @@ func TestAuthztnMiddleware(t *testing.T) {
 		{
 			name: "Successful",
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, "member", time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, membername, role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -54,7 +59,7 @@ func TestAuthztnMiddleware(t *testing.T) {
 		{
 			name: "InvalidAuthztn",
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, "invalid", "member", time.Minute)
+				addAuthztn(t, request, tokenAuthzr, "invalid", membername, role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -63,7 +68,7 @@ func TestAuthztnMiddleware(t *testing.T) {
 		{
 			name: "IncorrectAuthztnFormat",
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, "", "member", time.Minute)
+				addAuthztn(t, request, tokenAuthzr, "", membername, role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -72,7 +77,7 @@ func TestAuthztnMiddleware(t *testing.T) {
 		{
 			name: "TokenExpirationOccurred",
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, "member", -time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, membername, role, -time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)

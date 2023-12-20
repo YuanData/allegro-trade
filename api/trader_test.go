@@ -35,7 +35,7 @@ func TestGetTraderAPI(t *testing.T) {
 			name:      "Successful",
 			traderID: trader.ID,
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -52,7 +52,7 @@ func TestGetTraderAPI(t *testing.T) {
 			name:      "MemberNotAuthorized",
 			traderID: trader.ID,
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, "unauthorized_member", time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, "unauthorized_member", util.PrayerRole, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -82,7 +82,7 @@ func TestGetTraderAPI(t *testing.T) {
 			name:      "Missing",
 			traderID: trader.ID,
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 
 			buildStubs: func(store *mockdb.MockStore) {
@@ -99,7 +99,7 @@ func TestGetTraderAPI(t *testing.T) {
 			name:      "ServerFailure",
 			traderID: trader.ID,
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -115,7 +115,7 @@ func TestGetTraderAPI(t *testing.T) {
 			name:      "WrongID",
 			traderID: 0,
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -169,7 +169,7 @@ func TestCreateTraderAPI(t *testing.T) {
 				"symbol": trader.Symbol,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateTraderParams{
@@ -210,7 +210,7 @@ func TestCreateTraderAPI(t *testing.T) {
 				"symbol": trader.Symbol,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -228,7 +228,7 @@ func TestCreateTraderAPI(t *testing.T) {
 				"symbol": "invalid",
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -296,7 +296,7 @@ func TestListTradersAPI(t *testing.T) {
 				PageLmt: n,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.ListTradersParams{
@@ -339,7 +339,7 @@ func TestListTradersAPI(t *testing.T) {
 				PageLmt: n,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -358,7 +358,7 @@ func TestListTradersAPI(t *testing.T) {
 				PageLmt: n,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -376,7 +376,7 @@ func TestListTradersAPI(t *testing.T) {
 				PageLmt: 9999,
 			},
 			setupAuthztn: func(t *testing.T, request *http.Request, tokenAuthzr token.Authzr) {
-				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, time.Minute)
+				addAuthztn(t, request, tokenAuthzr, authztnTypeBearer, member.Membername, member.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
